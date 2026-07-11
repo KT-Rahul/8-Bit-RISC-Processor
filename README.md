@@ -1,3 +1,3 @@
 # 8-Bit-RISC-Processor
 
-Built a custom minimal 8-bit Harvard-style RISC processor with a custom 16-bit instruction set in Verilog HDL. This is my first working prototype and will have more improvements with data memory, pipelining, and additional ISA features.
+Built a custom minimal 8-bit Harvard-style RISC processor with a custom 16-bit instruction set in Verilog HDL. This is my first working prototype and will have more improvements with data memory, pipelining, and additional ISA features. I have loaded a simple Fibonacci program into the instruction memory which prints until the carryf is tripped signalling maximum Fibonacci number reached in an 8-Bit register(i.e., 233). The value will be stored in register 1.

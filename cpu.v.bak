@@ -1,0 +1,70 @@
+module cpu (
+    input clk,
+    input reset
+);
+
+
+// Program Counter:
+wire pc_select;
+wire [3:0] jump_address;
+wire HALT;
+wire [3:0] pc_in;
+program_counter pc(.clk(clk), .reset(reset), .halt(HALT), .pc_select(pc_select), .jump_address(jump_address), .pc(pc_in));
+
+
+// Instruction Memory:
+wire [15:0] instruction_fromMem;
+instruction_memory irM(.pc_in(pc_in), .instruction(instruction_fromMem));
+
+
+// Instruction Register:
+wire ir_load;
+wire [15:0] instruction_outofReg;
+instruction_register irR(.clk(clk), .reset(reset), .instruction_in(instruction_fromMem), .ir_load(ir_load), .instruction_out(instruction_outofReg));
+
+
+// Instruction Decoder:
+wire [3:0] opcode; // output
+wire [1:0] rd; // output
+wire [1:0] rA; // output
+wire [1:0] rB; // output
+wire [3:0] pc_address; // output
+wire [7:0] immediate_value; // output
+instruction_decoder irD(.instruction(instruction_outofReg), .opcode(opcode), .rd(rd), .rA(rA), .rB(rB), .pc_address(pc_address),
+                        .immediate_value(immediate_value));
+
+
+
+// Register File:
+wire reg_write;
+wire [7:0] writeback_data;
+always @(*) begin
+    if (instruction_outofReg[15:12] == 4'd5) begin
+        writeback_data = immediate_value;
+    end
+end
+wire [7:0] rdata1;
+wire [7:0] rdata2;
+register_file regf(.clk(clk), .reset(reset), .w_enable(reg_write), .w_address(rd),
+                    .w_data(writeback_data), .raddress1(rA), .raddress2(rB), .rdata1(rdata1), .rdata2(rdata2));
+
+
+
+// Control Unit:
+wire [1:0] alu_op;
+wire writeback_sel;
+wire overflowf;
+control_unit cu(.opcode(opcode), .overflowf(overflowf), .pc_address(pc_address), .reg_write(reg_write), .alu_op(alu_op),
+                .pc_select(pc_select), .jump_address(jump_address), .ir_load(ir_load), .halt(HALT), .writeback_sel(writeback_sel));
+
+
+
+// ALU:
+wire [7:0] alu_result;
+alu al(.a(rdata1), .b(rdata2), .op(alu_op), .result(alu_result), .overflowf(overflowf));
+
+
+// 2:1 MUX to sort alu_result and just moving data.
+mux_2 mux(.alu_result(alu_result), .rdata2(rdata2), .writeback_sel(writeback_sel), .writeback_data(writeback_data));
+    
+endmodule

@@ -1,0 +1,18 @@
+module instruction_decoder (
+    input [15:0] instruction,
+    output [3:0] opcode,
+    output [1:0] rd,
+    output [1:0] rA,
+    output [1:0] rB,
+    output [3:0] pc_address
+    output [7:0] immediate_value
+);
+
+assign opcode = instruction[15:12];
+assign rd = instruction[11:10];
+assign rA = instruction[9:8];
+assign rB = instruction[7:6];
+assign pc_address = instruction[11:8];
+assign immediate_value = instruction[9:2];
+    
+endmodule
